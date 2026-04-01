@@ -9,4 +9,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // 👇 這就是拯救白畫面的疫苗！
+  define: {
+    'process.env': {} 
+  }
 });
