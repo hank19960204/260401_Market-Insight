@@ -1,0 +1,72 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+@theme {
+  /* ── 字型 ─────────────────────────── */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* ── 品牌色（深靛藍系） ───────────── */
+  --color-brand-50:  #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-900: #312e81;
+
+  /* ── 表面色 ────────────────────────── */
+  --color-surface: #ffffff;
+  --color-surface-2: #f8fafc;
+  --color-border: #e2e8f0;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+  }
+
+  /* 捲軸美化 */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-300; }
+}
+
+/* ── 競品對比 Grid ─────────────────────────────────── */
+.comparison-grid {
+  display: grid;
+  /* 首欄固定 200px，其餘每格最少 220px */
+  grid-template-columns: 200px repeat(var(--col-count, 3), minmax(220px, 1fr));
+}
+
+/* 偶數列底色（斑馬紋） */
+.comparison-row-even { @apply bg-slate-50/60; }
+
+/* ── 通用動畫 ──────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-page {
+  animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Sidebar active 光暈 ────────────────────────────── */
+.sidebar-active {
+  position: relative;
+}
+.sidebar-active::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  @apply bg-brand-500 rounded-full;
+}

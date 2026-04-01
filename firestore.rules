@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ================================================================
+    // 輔助函式
+    // ================================================================
+
+    /** 是否已登入 */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * 是否為管理員
+     * 條件：
+     *   1. 已登入
+     *   2. email 符合環境變數設定的管理員 email（寫死在 rules 裡）
+     *   3. Google 帳號已驗證（email_verified = true）
+     *
+     * ⚠️ 請將下方的 "your-admin@gmail.com" 換成你真實的 Gmail 地址
+     */
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == "your-admin@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+
+    // ================================================================
+    // products 集合
+    // ================================================================
+    match /products/{productId} {
+      /** 任何人都可以讀取競品資料（公開頁面） */
+      allow read: if true;
+
+      /** 只有管理員可以寫入（含建立、更新、刪除） */
+      allow create: if isAdmin() && isValidProduct(request.resource.data);
+      allow update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    /** 驗證 Product 欄位合法性 */
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'brand', 'category'])
+        && data.name  is string && data.name.size()     > 0 && data.name.size()     < 120
+        && data.brand is string && data.brand.size()    > 0 && data.brand.size()    < 80
+        && data.category is string && data.category.size() < 80
+        // specGroups 為 map（允許空 map）
+        && (
+          !('specGroups' in data)
+          || data.specGroups is map
+        );
+    }
+
+    // ================================================================
+    // trends 集合
+    // ================================================================
+    match /trends/{trendId} {
+      allow read:   if true;
+      allow create: if isAdmin() && isValidTrend(request.resource.data);
+      allow update: if isAdmin() && isValidTrend(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function isValidTrend(data) {
+      return data.keys().hasAll(['type', 'label'])
+        && data.type  in ['market_share', 'pain_point']
+        && data.label is string && data.label.size() < 100;
+    }
+
+    // ================================================================
+    // news 集合
+    // ================================================================
+    match /news/{newsId} {
+      allow read:   if true;
+      allow create: if isAdmin() && isValidNews(request.resource.data);
+      allow update: if isAdmin() && isValidNews(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    function isValidNews(data) {
+      return data.keys().hasAll(['title', 'date'])
+        && data.title is string && data.title.size() < 200
+        && data.date  is string;
+    }
+
+    // ================================================================
+    // 其他所有路徑：預設拒絕
+    // ================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
